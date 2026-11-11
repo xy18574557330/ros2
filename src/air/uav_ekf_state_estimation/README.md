@@ -37,7 +37,7 @@ python main.py demo
 ==> uav_ekf_state_estimation
     ekf_rmse_m=1.7452
     dead_reckoning_rmse_m=96.4764
-    gps_rmse_m=2.6594
+    gps_rmse_m=3.623
     ekf_final_error_m=2.0726
     complementary_yaw_rmse_deg=1.0004
     gps_sigma_m=1.8
@@ -48,8 +48,10 @@ python main.py demo
 
 ![EKF state estimation](results/demo_screenshot.png)
 
-在这组合成数据上，EKF 的三维 RMSE 为 **1.75 m**，低于纯 GPS 的 **2.66 m**；
-不融合 GPS/气压计的航位推算为 **96.48 m**。这些数字只对应本文件的固定随机种子
+在这组合成数据上，EKF 的三维 RMSE 为 **1.75 m**，低于纯 GPS 的 **3.62 m**；
+不融合 GPS/气压计的航位推算为 **96.48 m**。三个基线都只用各自的传感器量测：
+纯 GPS 基线保持最后一次定位（含 GPS 自己的垂直噪声），不会借用真值高度，
+否则它的垂直误差会塌到厘米级、把对比结果拉偏。这些数字只对应本文件的固定随机种子
 和噪声参数，不是对真实飞行的精度承诺。
 
 ## 测试
@@ -58,11 +60,12 @@ python main.py demo
 python -m unittest discover -s tests -v
 ```
 
-15 个测试覆盖 GPS 更新降低协方差、气压计更新、悬停预测、姿态滤波器、指标有限性
+16 个测试覆盖 GPS 更新降低协方差、气压计更新、悬停预测、姿态滤波器、指标有限性
 和随机种子可重复性，以及 REP-103(FLU)→FRD 的符号转换和水平静止输入贯穿
 `step_imu`（与 `on_imu` 同一条处理链）的回归。GPS 轴序另有三个用例：只增加纬度
 时只更新内部 north、只增加经度时只更新内部 east（并核对发布的 ENU 方向），以及
-NED→ENU 的换轴与 z 取反。
+NED→ENU 的换轴与 z 取反。`test_gps_baseline_keeps_the_measured_altitude` 约束
+纯 GPS 基线的高度必须来自 GPS 量测，防止把真值高度混进对比。
 
 ## 方法说明
 
@@ -113,7 +116,7 @@ source install/setup.bash
 ros2 launch uav_ekf_state_estimation main.launch.py
 ```
 
-ROS 2 节点在当前 Windows 开发机上未执行；离线核心和 12 个单元测试已实际运行。
+ROS 2 节点在当前 Windows 开发机上未执行；离线核心和 16 个单元测试已实际运行。
 在 Ubuntu + ROS 2 Humble 中运行时，需要把 GPS 经纬度投影到局部 ENU 原点，节点
 内部已用一个简单等距圆柱投影做示例，正式使用应替换为地图的 `GeoProjection`。
 
