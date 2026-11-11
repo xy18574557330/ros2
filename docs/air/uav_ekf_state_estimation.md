@@ -24,7 +24,7 @@ python main.py demo
 ```text
 ekf_rmse_m=1.7452
 dead_reckoning_rmse_m=96.4764
-gps_rmse_m=2.6594
+gps_rmse_m=3.623
 ekf_final_error_m=2.0726
 complementary_yaw_rmse_deg=1.0004
 ```
@@ -81,7 +81,7 @@ source install/setup.bash
 ros2 launch uav_ekf_state_estimation main.launch.py
 ```
 
-ROS 2 节点在当前 Windows 开发机上未执行；离线核心、12 个单元测试和 PNG 截图
+ROS 2 节点在当前 Windows 开发机上未执行；离线核心、16 个单元测试和 PNG 截图
 均已实际运行。ROS 2 Humble 的实时验证需要在 Ubuntu 虚拟机中完成。
 
 ## 验证
@@ -90,7 +90,7 @@ ROS 2 节点在当前 Windows 开发机上未执行；离线核心、12 个单�
 python -m unittest discover -s tests -v
 ```
 
-15 个测试全部通过，覆盖 GPS 协方差收敛、气压计更新、悬停预测、姿态滤波、
+16 个测试全部通过，覆盖 GPS 协方差收敛、气压计更新、悬停预测、姿态滤波、
 指标有限性和随机种子可重复性，以及 REP-103(FLU)→FRD 的符号转换与水平静止输入
 贯穿 `on_imu` 处理链（`step_imu`）的回归。GPS 轴序另有三个用例：只增加纬度时只
 更新内部 north、只增加经度时只更新内部 east（并核对发布的 ENU 方向），以及
