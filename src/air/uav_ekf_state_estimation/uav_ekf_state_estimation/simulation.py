@@ -180,13 +180,16 @@ def run_simulation(
         dead_position_samples[valid] - true_samples[valid], axis=1
     )
 
+    # The GPS-only baseline may use nothing but GPS: zero-order hold the last fix,
+    # all three axes included. Substituting ``true_position[time_index, 2]`` here
+    # hands the baseline a ground-truth altitude, which zeroes its vertical error and
+    # understates ``gps_rmse_m`` (2.66 m instead of 3.62 m at the default seed) while
+    # the EKF only ever sees the noisy barometer.
     gps_reference = np.full_like(true_samples, np.nan)
-    last_gps = np.array([first_gps[0], first_gps[1], first_baro])
+    last_gps = first_gps.copy()
     for sample_index, time_index in enumerate(sample_indices):
         if not np.isnan(gps_position[time_index, 0]):
-            last_gps = np.array(
-                [gps_position[time_index, 0], gps_position[time_index, 1], true_position[time_index, 2]]
-            )
+            last_gps = gps_position[time_index].copy()
         gps_reference[sample_index] = last_gps
     gps_error = np.linalg.norm(gps_reference[valid] - true_samples[valid], axis=1)
     yaw_error = np.angle(
